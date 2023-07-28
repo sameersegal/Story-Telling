@@ -3,19 +3,20 @@ import openai
 import torch
 from huggingface_hub import HfFolder
 from PIL import Image
-
-# token = HfFolder.get_token()
+from transformers import pipeline
 
 pipe = DiffusionPipeline.from_pretrained(
     "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16, use_safetensors=True, variant="fp16")
 pipe.to("cuda")
 
 refiner = DiffusionPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-xl-refiner-1.0", 
+    "stabilityai/stable-diffusion-xl-refiner-1.0",
     text_encoder_2=pipe.text_encoder_2,
     vae=pipe.vae,
     torch_dtype=torch.float16, use_safetensors=True, variant="fp16")
 refiner.to("cuda")
+
+i2t = pipeline("image-to-text", model="Salesforce/blip-image-captioning-large")
 
 
 def generate_image(prompt: str):
