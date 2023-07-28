@@ -2,14 +2,32 @@
 name = "kahani"
 version = "0.1.0"
 description = ""
-authors = ["Sameer Segal <sameersegal@microsoft.com>"]
+authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-openai = "^0.27.8"
+python = ">=3.10,<3.11"
+transformers = "^4.31.0"
+diffusers = "^0.18.2"
+accelerate = "^0.21.0"
+scipy = "^1.11.1"
+safetensors = "^0.3.1"
+invisible-watermark = "^0.2.0"
 python-dotenv = "^1.0.0"
-pandas = "^2.0.3"
+huggingface-hub = "^0.16.4"
+openai = "^0.27.8"
+torch = "^2.0.1"
+nvidia-cublas-cu11 = { version = "11.10.3.66", platform = 'linux' }
+nvidia-cuda-cupti-cu11 = { version = "11.7.101", platform = 'linux' }
+nvidia-cuda-nvrtc-cu11 = { version = "11.7.99", platform = 'linux' }
+nvidia-cuda-runtime-cu11 = { version = "11.7.99", platform = 'linux' }
+nvidia-cudnn-cu11 = { version = "8.5.0.96", platform = 'linux' }
+nvidia-cufft-cu11 = { version = "10.9.0.58", platform = 'linux' }
+nvidia-curand-cu11 = { version = "10.2.10.91", platform = 'linux' }
+nvidia-cusolver-cu11 = { version = "11.4.0.1", platform = 'linux' }
+nvidia-cusparse-cu11 = { version = "11.7.4.91", platform = 'linux' }
+nvidia-nccl-cu11 = { version = "2.14.3", platform = 'linux' }
+nvidia-nvtx-cu11 = { version = "11.7.91", platform = 'linux' }
 
 
 [build-system]

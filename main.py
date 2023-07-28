@@ -1,10 +1,9 @@
 import sys
-import time
 import openai
 from dotenv import load_dotenv
 import os
 import json
-import requests
+from image import generate_image, get_image_prompt
 load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -37,18 +36,30 @@ def get_scenes(story):
         model="gpt-3.5-turbo-16k-0613",
         messages=[
             {"role": "system", "content": """
-            You are an expert in visual storytelling. Break the story provided by the user into 5 critical scenes. Respond in valid json format as follows:
+            You are an expert in visual storytelling. Break the story provided by the user into 5 critical scenes with at max 3 characters. Respond in valid json format as follows:
              {
+                "characters":[
+                    {"key":"","description":""},
+                ]
                 "scenes": [
-                    { "image_prompt": "", "narration": "" },
-                    { "image_prompt": "", "narration": "" }
+                    { 
+                        "characters": [
+                            {"key": "", orientation": "", "position":""},
+                        ]
+                        "background_description": "", 
+                        "narration": "" 
+                    }
                 ]
              }
 
-             image_prompt: a description of the image that should be generated for the scene
-             narration: a maximum of 50 words that will be the voiceover for the scene
+            key: a unique identifier for the character 
+            description: a detailed visual description. Do not reference other objects.
+            orientation: a short key phrase that describes orientation or pose of the character in the scene e.g. looking at the camera, walking away, etc.            
+            position: which part of the scene the character is in e.g. left, right, center, etc.
+            background_description: a description of the background in the scene
+            narration: a maximum of 50 words that will be the voiceover for the scene
 
-             A few sample image_prompt are provided below:
+             A few sample prompts for images are provided below:
              a switzerland landscape, cartoon style
              kitten leaping and jumping in air, garden, pixar style, 3d, depth of field
              a drawing of plants and sun, in the style of purple and yellow, emphasis on negative space, fauvist figuratism
@@ -57,45 +68,10 @@ def get_scenes(story):
         ]
     )
     data = completions.choices[0].message.content
+    print(data)
     scenes = json.loads(data)
     return scenes
 
-
-def draw_scene(prompt):
-    # call midjourney api
-
-    url = "YOUR_API_BASE_URL/imagine"
-
-    payload = json.dumps({
-        "prompt": f"{prompt} --ar 16:9"
-    })
-
-    headers = {
-        'Authorization': 'YOUR_API_KEY',
-        'Content-Type': 'application/json'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-
-    print(response.text)
-
-    while True:
-
-        url = "YOUR_API_BASE_URL/result"
-
-        payload = json.dumps({
-            "resultId": "xxxxxxxxxxxxxxxxx"
-        })
-        headers = {
-            'Authorization': 'YOUR_API_KEY',
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.request("POST", url, headers=headers, data=payload)
-
-        print(response.text)
-
-        time.sleep(3)
 
 
 if __name__ == "__main__":
@@ -103,19 +79,16 @@ if __name__ == "__main__":
     story = get_story(sys.argv[1])
     # story = get_story(path)
     # print()
-    # scenes = get_scenes(story)
-    scenes = [
-        {'image_prompt': 'A Snow Man stands in a snowy landscape, with the setting sun in the background.',
-            'narration': 'The Snow Man marvels at the cold wind and stares defiantly at the setting sun.'},
-        {'image_prompt': 'The Snow Man converses with the yard-dog, both covered in snow.',
-            'narration': "The yard-dog tells the Snow Man about the changing weather and the sun's power to make things run."},
-        {'image_prompt': 'The Snow Man observes the beauty of the frozen landscape.',
-            'narration': 'The Snow Man is captivated by the glistening trees, frozen dewdrops, and sparkling beauty of winter.'},
-        {'image_prompt': 'A young girl and a young man admire the Snow Man in the garden.',
-            'narration': "The young girl and man marvel at the Snow Man's beauty and express their delight in the snowy scenery."},
-        {'image_prompt': 'The Snow Man yearns to be near the stove, while the yard-dog warns him of its dangers.',
-            'narration': "The Snow Man becomes infatuated with the stove's warmth and dreams of being close to it, despite the yard-dog's warnings."}
-    ]
-    # print(scenes)
+    data = get_scenes(story)
+    # data = {'characters': [{'key': 'Snow Man', 'image_prompt': 'A tall snowman with tile eyes and a rake mouth'}, {'key': 'Sun', 'image_prompt': 'A large red sun setting in the sky'}, {'key': 'Yard Dog', 'image_prompt': 'A hoarse yard dog, chained up and wearing a collar'}], 'scenes': [{'characters': [{'key': 'Snow Man', 'orientation': 'looking up at the Sun'}], 'background_image_prompt': 'A winter landscape with a setting sun', 'narration': 'The Snow Man marvels at the cold wind and stares at the setting sun.'}, {'characters': [{'key': 'Snow Man', 'orientation': 'looking curious'}, {'key': 'Yard Dog', 'orientation': 'barking'}], 'background_image_prompt': 'A snowy yard with a chained-up dog', 'narration': 'The Snow Man asks the Yard Dog about the sun and the possibility of moving.'}, {'characters': [{'key': 'Snow Man', 'orientation': 'confused'}, {'key': 'Yard Dog', 'orientation': 'barking'}], 'background_image_prompt': 'A foggy landscape with a rising moon', 'narration': 'The Yard Dog explains the moon to the Snow Man and predicts a weather change.'}, {'characters': [{'key': 'Snow Man', 'orientation': 'looking in awe'}, {'key': 'Young Girl', 'orientation': 'excited'}, {'key': 'Young Man', 'orientation': 'admiring'}], 'background_image_prompt': 'A glittering winter garden with hoarfrost on the trees', 'narration': 'A young couple admires the sparkling winter scenery, including the Snow Man.'}, {'characters': [{'key': 'Snow Man', 'orientation': 'longing'}, {'key': 'Yard Dog', 'orientation': 'barking'}], 'background_image_prompt': "A window view of the housekeeper's room with a stove", 'narration': "The Snow Man becomes infatuated with the warmth and glow of the stove, much to the Yard Dog's warning."}]}
+    scenes = data['scenes']
+    characters = data['characters']
+    # print(characters)
 
-    draw_scene(scenes[0]["image_prompt"])
+    # draw_scene(scenes[0]["image_prompt"])
+    prompt = get_image_prompt(characters[0]["description"])
+    # print(prompt)
+    image = generate_image(prompt)
+
+    # save image to file
+    image.save("character.png")
