@@ -7,11 +7,11 @@ from PIL import Image
 # token = HfFolder.get_token()
 
 pipe = DiffusionPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-xl-base-0.9", torch_dtype=torch.float16, use_safetensors=True, variant="fp16")
+    "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16, use_safetensors=True, variant="fp16")
 pipe.to("cuda")
 
 refiner = DiffusionPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-xl-refiner-0.9", 
+    "stabilityai/stable-diffusion-xl-refiner-1.0", 
     text_encoder_2=pipe.text_encoder_2,
     vae=pipe.vae,
     torch_dtype=torch.float16, use_safetensors=True, variant="fp16")
